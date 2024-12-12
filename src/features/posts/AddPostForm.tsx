@@ -1,10 +1,9 @@
 import React from 'react';
 
-import { useAppDispatch, useAppSelector } from '../../app/hooks';
+import { useAppSelector } from '../../app/hooks';
 
-import { postAdded } from './postsSlice';
-import { selectAllUsers } from '../users/usersSlice';
 import { selectCurrentUsername } from '../auth/authSlice';
+import { useAddNewPostMutation } from '../api/apiSlice';
 
 // TS types for the input fields
 // See: https://epicreact.dev/how-to-type-a-react-form-on-submit-handler/
@@ -19,11 +18,10 @@ interface AddPostFormElements extends HTMLFormElement {
 
 export const AddPostForm = () => {
   // Get the `dispatch` method from the store
-  const dispatch = useAppDispatch();
-  const users = useAppSelector(selectAllUsers);
   const userId = useAppSelector(selectCurrentUsername)!;
+  const [addNewPost, { isLoading }] = useAddNewPostMutation();
 
-  const handleSubmit = (e: React.FormEvent<AddPostFormElements>) => {
+  const handleSubmit = async (e: React.FormEvent<AddPostFormElements>) => {
     // Prevent server submission
     e.preventDefault();
 
@@ -31,17 +29,16 @@ export const AddPostForm = () => {
     const title = elements.postTitle.value;
     const content = elements.postContent.value;
 
-    // Create the post object and dispatch the `postAdded` action
-    dispatch(postAdded(title, content, userId));
+    const form = e.currentTarget;
 
-    e.currentTarget.reset();
+    try {
+      await addNewPost({ title, content, user: userId }).unwrap();
+
+      form.reset();
+    } catch (err) {
+      console.error('Failed to save the post: ', err);
+    }
   };
-
-  const usersOptions = users.map((user) => (
-    <option key={user.id} value={user.id}>
-      {user.name}
-    </option>
-  ));
 
   return (
     <section>
@@ -51,7 +48,7 @@ export const AddPostForm = () => {
         <input type="text" id="postTitle" defaultValue="" required />
         <label htmlFor="postContent">Content:</label>
         <textarea id="postContent" name="postContent" defaultValue="" required />
-        <button>Save Post</button>
+        <button disabled={isLoading}>Save Post</button>
       </form>
     </section>
   );

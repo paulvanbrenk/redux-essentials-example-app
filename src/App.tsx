@@ -7,6 +7,10 @@ import { EditPostForm } from './features/posts/EditPostForm';
 import { useAppSelector } from './app/hooks';
 import { selectCurrentUsername } from './features/auth/authSlice';
 import { LoginPage } from './features/auth/LoginPage';
+import { UsersList } from './features/users/UsersList';
+import { UserPage } from './features/users/userPage';
+import { NotificationsList } from './features/notifications/NotificationsList';
+import { ToastContainer } from 'react-tiny-toast';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const username = useAppSelector(selectCurrentUsername);
@@ -33,11 +37,15 @@ function App() {
                   <Route path="/posts" element={<PostsMainPage />} />
                   <Route path="/posts/:postId" element={<SinglePostPage />} />
                   <Route path="/editPost/:postId" element={<EditPostForm />} />
+                  <Route path="/users" element={<UsersList />} />
+                  <Route path="/users/:userId" element={<UserPage />} />
+                  <Route path="/notifications" element={<NotificationsList />} />
                 </Routes>
               </ProtectedRoute>
             }
           />
         </Routes>
+        <ToastContainer />
       </div>
     </Router>
   );
